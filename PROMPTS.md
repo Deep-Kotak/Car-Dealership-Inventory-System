@@ -210,3 +210,35 @@ Produced: created the 8 listed directories with empty `__init__.py` files;
 created `requirements.txt` with the 9 listed packages; `pytest.ini` with
 `testpaths = tests`; `pyproject.toml` with `[tool.ruff]` and `[tool.black]`
 sections (line-length 88). No application code written.
+
+### 17.
+> Set up the config and database connection.
+>
+> Create app/config.py using pydantic-settings. Read these environment variables:
+> - DATABASE_URL (default: sqlite:///./dealership.db)
+> - SECRET_KEY
+> - CORS_ORIGINS
+>
+> Create app/db.py with a SQLAlchemy engine and session factory using DATABASE_URL from the config. Add a get_db function that provides a database session and closes it afterward.
+>
+> Keep the database configuration generic. Do not use SQLite-specific code so it can work with PostgreSQL later.
+>
+> Configure Alembic to use the same DATABASE_URL from the application config.
+>
+> Create a .env.example file with:
+> - DATABASE_URL
+> - SECRET_KEY
+> - CORS_ORIGINS
+>
+> Add .env to .gitignore.
+>
+> Do not create any models, tables, or migrations yet.
+
+Produced: `app/config.py` (pydantic-settings `Settings` class); `app/db.py`
+(generic `create_engine`, `SessionLocal`, `get_db()`, no SQLite-specific
+args); hand-written `alembic.ini`, `alembic/env.py` (reads
+`settings.DATABASE_URL`), `alembic/script.py.mako` (alembic CLI wasn't
+installed, so scaffolded by hand); `.env.example`; new `.gitignore` with
+`.env`. Syntax-checked via `py_compile` only — dependencies aren't installed
+yet so imports weren't runtime-verified. No models, tables, or migrations
+created.
