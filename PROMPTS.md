@@ -242,3 +242,37 @@ installed, so scaffolded by hand); `.env.example`; new `.gitignore` with
 `.env`. Syntax-checked via `py_compile` only — dependencies aren't installed
 yet so imports weren't runtime-verified. No models, tables, or migrations
 created.
+
+### 18.
+> pip install -r requirements.txt
+
+Produced: ran the install; `alembic`, `httpx`, `pydantic-settings`, `Mako`,
+`httpcore` were newly installed, rest already present. Flagged an unrelated
+pip warning about a corrupted `~ip` distribution in site-packages.
+
+### 19.
+> The tests in tests/api/test_health.py are failing because there's no
+> client fixture and no app yet. Write just enough to make them pass.
+>
+> Create app/main.py with:
+> - a function that builds and returns the FastAPI app
+> - GET /health returning {"status": "ok"} — no database
+> - GET /health/ready that runs SELECT 1 using get_db, then returns
+>   {"status": "ok", "database": "ok"}. If the database fails, return 503
+>   with {"status": "error", "database": "unreachable"}
+>
+> Add a client fixture in tests/conftest.py using FastAPI's TestClient with
+> a temporary SQLite database.
+>
+> Set up CORS using CORS_ORIGINS from the config.
+>
+> Keep it minimal.
+
+Produced: `app/main.py` with `create_app()` (CORS from `settings.CORS_ORIGINS`,
+`/health`, `/health/ready`) and module-level `app = create_app()`;
+`tests/conftest.py` with a `client` fixture (per-test temp SQLite file via
+`tmp_path`, `get_db` overridden via `app.dependency_overrides`). Flagged that
+`SECRET_KEY`/`CORS_ORIGINS` have no defaults and no `.env` exists yet, so set
+them as env-var defaults inside `conftest.py` rather than creating a `.env`
+file. Ran `pytest tests/api/test_health.py` — both tests pass. Did not touch
+the test file itself.
