@@ -1,3 +1,6 @@
+from app.domain.errors import OutOfStockError
+
+
 class Vehicle:
     def __init__(
         self,
@@ -12,6 +15,7 @@ class Vehicle:
             raise ValueError("price cannot be negative")
         if quantity < 0:
             raise ValueError("quantity cannot be negative")
+
         self.id = id
         self.make = make
         self.model = model
@@ -24,9 +28,18 @@ class Vehicle:
             if price < 0:
                 raise ValueError("price cannot be negative")
             self.price = price
+
         if make is not None:
             self.make = make
+
         if model is not None:
             self.model = model
+
         if category is not None:
             self.category = category
+
+    def purchase(self):
+        if self.quantity <= 0:
+            raise OutOfStockError(self.id)
+
+        self.quantity -= 1
