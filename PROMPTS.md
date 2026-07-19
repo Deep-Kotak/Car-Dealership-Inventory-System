@@ -686,3 +686,45 @@ stopped. Flagged (not acted on, since "no additions" was explicit): `passlib`
 itself is missing from the list — only `bcrypt` is present — so a clean
 install from this file would be missing the `passlib` package that
 `app/security.py` imports directly.
+
+### 33.
+> Create the authentication pages for the frontend.
+>
+> Implement the following:
+>
+> 1. Create src/auth/AuthContext.tsx
+>    - Store the current token and user role.
+>    - Add login, register, and logout functions.
+>    - These functions should use the API client.
+>    - Keep the token in React state.
+>
+> 2. Create src/pages/Login.tsx
+>    - Add email and password input fields.
+>    - Add a login button.
+>    - Show an error message if login is not successful.
+>
+> 3. Create src/pages/Register.tsx
+>    - Add email and password input fields.
+>    - Add a register button.
+>    - Include a link to the login page.
+>
+> 4. Update src/App.tsx
+>    - If the user is not logged in, show the login page.
+>    - If the user is logged in, show a simple dashboard with a logout button.
+>
+> Use Tailwind CSS for styling. Keep the UI clean, simple, and easy to use.
+
+Before writing code: found `frontend/` already scaffolded (Vite + React 19 +
+TS, not created by me) but with no Tailwind installed and no API client
+module — both implied as prerequisites by this request. Flagged both rather
+than silently bundling everything into one step; asked how to handle each.
+Human chose: set up Tailwind now and stop before the auth pages; create a
+minimal API client now as part of this same prerequisite step. Produced:
+installed `tailwindcss`/`@tailwindcss/vite`, wired the plugin into
+`vite.config.ts`, added `@import "tailwindcss";` to `src/index.css` (kept
+existing theme CSS); verified via `npx vite build`. Created
+`frontend/src/api/client.ts` (fetch wrapper, `ApiError`, `registerRequest`,
+`loginRequest`, base URL from `VITE_API_BASE_URL` env var falling back to
+`http://localhost:8000`); verified via `npx tsc -b`. Did not create
+`AuthContext.tsx`, `Login.tsx`, `Register.tsx`, or touch `App.tsx` — stopping
+per the human's instruction to confirm before that step.
