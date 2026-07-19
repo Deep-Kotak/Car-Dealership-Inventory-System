@@ -250,3 +250,55 @@ def test_update_missing_vehicle_returns_404(client):
     )
 
     assert response.status_code == 404
+def register_admin_and_login(client, email="boss@example.com"):
+    """Make an admin account and return its token."""
+    client.post(
+        "/api/auth/register",
+        json={"email": email, "password": "mypassword123", "role": "admin"},
+    )
+    response = client.post(
+        "/api/auth/login",
+        json={"email": email, "password": "mypassword123"},
+    )
+    return response.json()["access_token"]
+
+
+def test_admin_can_delete_vehicle(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000)
+    vehicle_id = created.json()["id"]
+
+    response = client.delete(
+        f"/api/vehicles/{vehicle_id}", headers=auth_header(admin_token)
+    )
+
+    assert response.status_code == 204
+
+
+def test_normal_user_cannot_delete_vehicle(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000)
+    vehicle_id = created.json()["id"]
+
+    user_token = register_and_login(client, email="buyer@example.com")
+
+    response = client.delete(
+        f"/api/vehicles/{vehicle_id}", headers=auth_header(user_token)
+    )
+
+    assert response.status_code == 403
+
+
+def test_delete_without_login_returns_401(client):
+    response = client.delete("/api/vehicles/1")
+    assert response.status_code == 401
+
+
+def test_delete_missing_vehicle_returns_404(client):
+    admin_token = register_admin_and_login(client)
+
+    response = client.delete(
+        "/api/vehicles/999", headers=auth_header(admin_token)
+    )
+
+    assert response.status_code == 404
