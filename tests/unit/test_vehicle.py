@@ -36,3 +36,53 @@ def test_vehicle_rejects_negative_quantity():
             price=20000,
             quantity=-1,
         )
+
+
+def test_update_changes_vehicle_details():
+    vehicle = Vehicle(
+        make="Toyota",
+        model="Corolla",
+        category="sedan",
+        price=20000,
+        quantity=3,
+    )
+
+    vehicle.update_details(
+        price=18000,
+        category="hatchback",
+    )
+
+    assert vehicle.price == 18000
+    assert vehicle.category == "hatchback"
+    assert vehicle.make == "Toyota"
+
+
+def test_update_does_not_change_quantity():
+    vehicle = Vehicle(
+        make="Toyota",
+        model="Corolla",
+        category="sedan",
+        price=20000,
+        quantity=3,
+    )
+
+    vehicle.update_details(
+        price=18000,
+    )
+
+    assert vehicle.quantity == 3
+
+
+def test_update_rejects_negative_price():
+    vehicle = Vehicle(
+        make="Toyota",
+        model="Corolla",
+        category="sedan",
+        price=20000,
+        quantity=3,
+    )
+
+    with pytest.raises(ValueError):
+        vehicle.update_details(
+            price=-500,
+        )
