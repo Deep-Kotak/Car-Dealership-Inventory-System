@@ -1,15 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { loginRequest, registerRequest } from '../api/client'
-
-interface AuthContextValue {
-  token: string | null
-  role: string | null
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
-  logout: () => void
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+import { AuthContext } from './authState'
 
 function decodeRole(token: string): string | null {
   try {
@@ -22,11 +13,15 @@ function decodeRole(token: string): string | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(null)
-  const [role, setRole] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('authToken'))
+  const [role, setRole] = useState<string | null>(() => {
+    const storedToken = localStorage.getItem('authToken')
+    return storedToken ? decodeRole(storedToken) : null
+  })
 
   async function login(email: string, password: string) {
     const { access_token } = await loginRequest(email, password)
+    localStorage.setItem('authToken', access_token)
     setToken(access_token)
     setRole(decodeRole(access_token))
   }
@@ -36,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    localStorage.removeItem('authToken')
     setToken(null)
     setRole(null)
   }
@@ -45,12 +41,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
 }

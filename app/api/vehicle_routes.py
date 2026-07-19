@@ -23,7 +23,7 @@ def get_vehicle_service(db: Session = Depends(get_db)) -> VehicleService:
 def create_vehicle(
     payload: VehicleCreateRequest,
     vehicle_service: VehicleService = Depends(get_vehicle_service),
-    user=Depends(current_user),
+    user: CurrentUser = Depends(require_admin),
 ):
     return vehicle_service.create(
         payload.make, payload.model, payload.category, payload.price, payload.quantity
@@ -62,7 +62,7 @@ def update_vehicle(
     vehicle_id: int,
     payload: VehicleUpdateRequest,
     vehicle_service: VehicleService = Depends(get_vehicle_service),
-    user=Depends(current_user),
+    user: CurrentUser = Depends(require_admin),
 ):
     return vehicle_service.update(
         vehicle_id,

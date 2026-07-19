@@ -24,10 +24,22 @@ def register_and_login(client, email="buyer@example.com"):
     return response_data["access_token"]
 
 
+def register_admin_and_login(client, email="boss@example.com"):
+    """Make an admin account and return its token."""
+
+    client.post(
+        "/api/auth/register",
+        json={"email": email, "password": "mypassword123", "role": "admin"},
+    )
+    response = client.post(
+        "/api/auth/login",
+        json={"email": email, "password": "mypassword123"},
+    )
+    return response.json()["access_token"]
+
+
 def auth_header(token):
-    return {
-        "Authorization": f"Bearer {token}"
-    }
+    return {"Authorization": f"Bearer {token}"}
 
 
 def add_vehicle(client, token, make, model, category, price, quantity=3):
@@ -61,7 +73,7 @@ def test_cannot_add_vehicle_without_login(client):
     assert response.status_code == 401
 
 
-def test_can_add_vehicle_after_login(client):
+def test_normal_user_cannot_add_vehicle(client):
     token = register_and_login(client)
 
     response = client.post(
@@ -76,6 +88,24 @@ def test_can_add_vehicle_after_login(client):
         headers=auth_header(token),
     )
 
+    assert response.status_code == 403
+
+
+def test_admin_can_add_vehicle(client):
+    admin_token = register_admin_and_login(client)
+
+    response = client.post(
+        "/api/vehicles",
+        json={
+            "make": "Toyota",
+            "model": "Corolla",
+            "category": "sedan",
+            "price": 20000,
+            "quantity": 3,
+        },
+        headers=auth_header(admin_token),
+    )
+
     response_data = response.json()
 
     assert response.status_code == 201
@@ -83,11 +113,12 @@ def test_can_add_vehicle_after_login(client):
 
 
 def test_can_list_vehicles(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -96,7 +127,7 @@ def test_can_list_vehicles(client):
 
     response = client.get(
         "/api/vehicles",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response_data = response.json()
@@ -106,11 +137,12 @@ def test_can_list_vehicles(client):
 
 
 def test_search_by_make(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -119,7 +151,7 @@ def test_search_by_make(client):
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Honda",
         "Civic",
         "sedan",
@@ -128,7 +160,7 @@ def test_search_by_make(client):
 
     response = client.get(
         "/api/vehicles/search?make=Toyota",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response_data = response.json()
@@ -139,11 +171,12 @@ def test_search_by_make(client):
 
 
 def test_search_by_price_range(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -152,7 +185,7 @@ def test_search_by_price_range(client):
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "BMW",
         "X5",
         "suv",
@@ -161,7 +194,7 @@ def test_search_by_price_range(client):
 
     response = client.get(
         "/api/vehicles/search?price_min=15000&price_max=30000",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response_data = response.json()
@@ -172,11 +205,12 @@ def test_search_by_price_range(client):
 
 
 def test_search_by_make_and_category(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -185,7 +219,7 @@ def test_search_by_make_and_category(client):
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "RAV4",
         "suv",
@@ -194,7 +228,7 @@ def test_search_by_make_and_category(client):
 
     response = client.get(
         "/api/vehicles/search?make=Toyota&category=suv",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response_data = response.json()
@@ -205,11 +239,12 @@ def test_search_by_make_and_category(client):
 
 
 def test_search_with_no_matches_returns_empty_list(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -218,49 +253,55 @@ def test_search_with_no_matches_returns_empty_list(client):
 
     response = client.get(
         "/api/vehicles/search?make=Ferrari",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response_data = response.json()
 
     assert response.status_code == 200
     assert response_data == []
-def test_can_update_vehicle(client):
-    token = register_and_login(client)
-    created = add_vehicle(client, token, "Toyota", "Corolla", "sedan", 20000)
+
+
+def test_admin_can_update_vehicle(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000)
     vehicle_id = created.json()["id"]
 
     response = client.put(
         f"/api/vehicles/{vehicle_id}",
         json={"price": 18000},
-        headers=auth_header(token),
+        headers=auth_header(admin_token),
     )
 
     assert response.status_code == 200
     assert response.json()["price"] == 18000
 
 
+def test_normal_user_cannot_update_vehicle(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000)
+    vehicle_id = created.json()["id"]
+    user_token = register_and_login(client)
+
+    response = client.put(
+        f"/api/vehicles/{vehicle_id}",
+        json={"price": 18000},
+        headers=auth_header(user_token),
+    )
+
+    assert response.status_code == 403
+
+
 def test_update_missing_vehicle_returns_404(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
 
     response = client.put(
         "/api/vehicles/999",
         json={"price": 18000},
-        headers=auth_header(token),
+        headers=auth_header(admin_token),
     )
 
     assert response.status_code == 404
-def register_admin_and_login(client, email="boss@example.com"):
-    """Make an admin account and return its token."""
-    client.post(
-        "/api/auth/register",
-        json={"email": email, "password": "mypassword123", "role": "admin"},
-    )
-    response = client.post(
-        "/api/auth/login",
-        json={"email": email, "password": "mypassword123"},
-    )
-    return response.json()["access_token"]
 
 
 def test_admin_can_delete_vehicle(client):
@@ -297,18 +338,18 @@ def test_delete_without_login_returns_401(client):
 def test_delete_missing_vehicle_returns_404(client):
     admin_token = register_admin_and_login(client)
 
-    response = client.delete(
-        "/api/vehicles/999", headers=auth_header(admin_token)
-    )
+    response = client.delete("/api/vehicles/999", headers=auth_header(admin_token))
 
     assert response.status_code == 404
 
+
 def test_purchase_reduces_stock(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     created = add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -320,7 +361,7 @@ def test_purchase_reduces_stock(client):
 
     response = client.post(
         f"/api/vehicles/{vehicle_id}/purchase",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response_data = response.json()
@@ -330,11 +371,12 @@ def test_purchase_reduces_stock(client):
 
 
 def test_purchase_out_of_stock_returns_409(client):
-    token = register_and_login(client)
+    admin_token = register_admin_and_login(client)
+    user_token = register_and_login(client)
 
     created = add_vehicle(
         client,
-        token,
+        admin_token,
         "Toyota",
         "Corolla",
         "sedan",
@@ -346,19 +388,28 @@ def test_purchase_out_of_stock_returns_409(client):
 
     client.post(
         f"/api/vehicles/{vehicle_id}/purchase",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     response = client.post(
         f"/api/vehicles/{vehicle_id}/purchase",
-        headers=auth_header(token),
+        headers=auth_header(user_token),
     )
 
     assert response.status_code == 409
-    
+
+
 def test_admin_can_restock(client):
     admin_token = register_admin_and_login(client)
-    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000, quantity=2)
+    created = add_vehicle(
+        client,
+        admin_token,
+        "Toyota",
+        "Corolla",
+        "sedan",
+        20000,
+        quantity=2,
+    )
     vehicle_id = created.json()["id"]
 
     response = client.post(
@@ -373,7 +424,15 @@ def test_admin_can_restock(client):
 
 def test_normal_user_cannot_restock(client):
     admin_token = register_admin_and_login(client)
-    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000, quantity=2)
+    created = add_vehicle(
+        client,
+        admin_token,
+        "Toyota",
+        "Corolla",
+        "sedan",
+        20000,
+        quantity=2,
+    )
     vehicle_id = created.json()["id"]
 
     user_token = register_and_login(client, email="buyer@example.com")
@@ -389,7 +448,15 @@ def test_normal_user_cannot_restock(client):
 
 def test_restock_with_zero_amount_returns_400(client):
     admin_token = register_admin_and_login(client)
-    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000, quantity=2)
+    created = add_vehicle(
+        client,
+        admin_token,
+        "Toyota",
+        "Corolla",
+        "sedan",
+        20000,
+        quantity=2,
+    )
     vehicle_id = created.json()["id"]
 
     response = client.post(

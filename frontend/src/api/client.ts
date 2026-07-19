@@ -91,3 +91,50 @@ export function searchVehicles(token: string, params: VehicleSearchParams) {
     token,
   )
 }
+
+export function purchaseVehicle(token: string, vehicleId: number) {
+  return request<Vehicle>(`/api/vehicles/${vehicleId}/purchase`, { method: 'POST' }, token)
+}
+
+export interface VehicleCreateInput {
+  make: string
+  model: string
+  category: string
+  price: number
+  quantity: number
+}
+
+export function createVehicle(token: string, input: VehicleCreateInput) {
+  return request<Vehicle>(
+    '/api/vehicles',
+    { method: 'POST', body: JSON.stringify(input) },
+    token,
+  )
+}
+
+export interface VehicleUpdateInput {
+  make?: string
+  model?: string
+  category?: string
+  price?: number
+}
+
+export function updateVehicle(token: string, vehicleId: number, input: VehicleUpdateInput) {
+  return request<Vehicle>(
+    `/api/vehicles/${vehicleId}`,
+    { method: 'PUT', body: JSON.stringify(input) },
+    token,
+  )
+}
+
+export function deleteVehicle(token: string, vehicleId: number) {
+  return request<void>(`/api/vehicles/${vehicleId}`, { method: 'DELETE' }, token)
+}
+
+export function restockVehicle(token: string, vehicleId: number, amount: number) {
+  return request<Vehicle>(
+    `/api/vehicles/${vehicleId}/restock`,
+    { method: 'POST', body: JSON.stringify({ amount }) },
+    token,
+  )
+}
