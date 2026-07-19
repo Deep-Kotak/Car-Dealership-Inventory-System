@@ -276,3 +276,19 @@ Produced: `app/main.py` with `create_app()` (CORS from `settings.CORS_ORIGINS`,
 them as env-var defaults inside `conftest.py` rather than creating a `.env`
 file. Ran `pytest tests/api/test_health.py` — both tests pass. Did not touch
 the test file itself.
+
+### 20. ⚠️
+> The tests in tests/unit/test_security.py are failing. Write app/security.py
+> with hash_password and verify_password using passlib with bcrypt.
+>
+> Keep it minimal — just those two functions.
+
+Before writing code: flagged that `.env.example` (not gitignored) contained a
+real-looking Neon Postgres connection string and a real-looking `SECRET_KEY`
+instead of placeholders, and asked how to handle it. Reason given: "They're
+real — I'll fix it" — the human owns rotating/replacing those values; I left
+`.env.example` untouched. Then produced: `app/security.py` with
+`hash_password`/`verify_password` via `passlib.context.CryptContext(["bcrypt"])`,
+nothing else. Ran `pytest tests/unit/test_security.py` — both tests pass.
+Marked ⚠️ because this was a stop-and-flag exchange, not a straight accept,
+though the flagged issue was in a config file, not in AI-generated code.
