@@ -23,6 +23,22 @@ class VehicleRepository:
         models = self.db.query(VehicleModel).all()
         return [self._to_domain(model) for model in models]
 
+    def search(self, make=None, model=None, category=None, price_min=None, price_max=None):
+        query = self.db.query(VehicleModel)
+
+        if make is not None:
+            query = query.filter(VehicleModel.make == make)
+        if model is not None:
+            query = query.filter(VehicleModel.model == model)
+        if category is not None:
+            query = query.filter(VehicleModel.category == category)
+        if price_min is not None:
+            query = query.filter(VehicleModel.price >= price_min)
+        if price_max is not None:
+            query = query.filter(VehicleModel.price <= price_max)
+
+        return [self._to_domain(model) for model in query.all()]
+
     def _to_domain(self, model):
         return Vehicle(
             id=model.id,

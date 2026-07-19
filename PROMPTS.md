@@ -467,3 +467,38 @@ POST/GET `/api/vehicles`, both gated by `current_user`); registered the
 vehicle router in `app/main.py`; hand-wrote
 `alembic/versions/76f5130f481f_create_vehicles_table.py` chained after the
 users migration. Ran full suite (`pytest`) — all 24 tests pass.
+
+### 26.
+> The search tests in tests/api/test_vehicles.py are failing. Please implement the missing parts so the tests pass.
+>
+> Update the following:
+>
+> 1. In app/repositories/vehicle_repository.py
+>    - Add a search method.
+>    - It should accept:
+>      - make
+>      - model
+>      - category
+>      - price_min
+>      - price_max
+>    - Any parameter can be None, which means it should not be used for filtering.
+>    - Build the database query using only the filters that are provided.
+>
+> 2. In app/services/vehicle_service.py
+>    - Add a search method that calls the repository search method.
+>
+> 3. In app/api/vehicle_routes.py
+>    - Add GET /api/vehicles/search.
+>    - Read the query parameters and pass them to the service.
+>    - This endpoint should require authentication.
+>
+> Keep the routes simple. They should only read the request data, call the service, and return the response. Do not add filtering or query-building logic inside the routes.
+>
+> Also make sure that /api/vehicles/search is registered before /api/vehicles/{id} so the search route is not treated as an id.
+
+Produced: added `search()` to `VehicleRepository` (conditionally chains
+`.filter()` only for non-`None` params); passthrough `search()` on
+`VehicleService`; `GET /api/vehicles/search` in `vehicle_routes.py` (optional
+query params, `current_user`-gated), placed before the `GET /api/vehicles`
+list route — noted no `/{id}` route exists yet so there's nothing to actually
+conflict with today. Ran full suite (`pytest`) — all 28 tests pass.
