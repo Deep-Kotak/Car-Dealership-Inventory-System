@@ -292,3 +292,19 @@ real — I'll fix it" — the human owns rotating/replacing those values; I left
 nothing else. Ran `pytest tests/unit/test_security.py` — both tests pass.
 Marked ⚠️ because this was a stop-and-flag exchange, not a straight accept,
 though the flagged issue was in a config file, not in AI-generated code.
+
+### 21.
+> The token tests in tests/unit/test_security.py are failing. Add create_token
+> and decode_token to app/security.py using python-jose.
+>
+> create_token takes user_id and role, and returns a signed JWT.
+> decode_token takes a token and returns the data back.
+>
+> Use SECRET_KEY from the config. Give tokens an expiry time.
+>
+> Keep it minimal.
+
+Produced: added `create_token(user_id, role)` / `decode_token(token)` to
+`app/security.py` using `jose.jwt.encode`/`decode`, HS256, `settings.SECRET_KEY`,
+30-minute `exp` claim. Ran `pytest tests/unit/test_security.py` — all 4 tests
+pass.
