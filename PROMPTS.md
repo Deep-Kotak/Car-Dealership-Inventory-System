@@ -308,3 +308,31 @@ Produced: added `create_token(user_id, role)` / `decode_token(token)` to
 `app/security.py` using `jose.jwt.encode`/`decode`, HS256, `settings.SECRET_KEY`,
 30-minute `exp` claim. Ran `pytest tests/unit/test_security.py` — all 4 tests
 pass.
+
+### 22. ⚠️
+> The tests in tests/service/test_auth_service.py are failing.
+>
+> Create app/domain/errors.py with a DuplicateEmailError exception. It should
+> be a plain Python exception — no FastAPI imports.
+>
+> Create app/services/auth_service.py with an AuthService class. It takes a
+> user repository in __init__. Give it a register method that:
+> - checks if the email already exists, and raises DuplicateEmailError if so
+> - hashes the password using hash_password from app.security
+> - creates a User with role "user"
+> - saves it through the repository and returns it
+>
+> Keep it minimal.
+
+Produced: `app/domain/errors.py` (`DuplicateEmailError(Exception)`, plain
+Python, no FastAPI); `app/services/auth_service.py` (`AuthService` wrapping a
+user repository, `register()` checks `get_by_email`, raises
+`DuplicateEmailError`, else hashes password via `hash_password` and builds a
+`User(role="user")` from the pre-existing `app/domain/user.py`, saves via
+`repository.add`). Ran `pytest tests/service/test_auth_service.py`:
+`test_register_rejects_duplicate_email` passes;
+`test_register_creates_user_with_hashed_password` fails with
+`NameError: name 'service' is not defined` — a bug in the test itself (only
+`auth_service` was assigned, never `service`), unrelated to the service code.
+Flagged this rather than editing the test. Marked ⚠️ since it surfaces a defect
+in human-owned test code, not a correction of AI output.
