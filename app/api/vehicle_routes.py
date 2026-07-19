@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import current_user
 from app.db import get_db
 from app.repositories.vehicle_repository import VehicleRepository
-from app.schemas.vehicle import VehicleCreateRequest, VehicleResponse
+from app.schemas.vehicle import VehicleCreateRequest, VehicleResponse, VehicleUpdateRequest
 from app.services.vehicle_service import VehicleService
 
 router = APIRouter(prefix="/api/vehicles", tags=["vehicles"])
@@ -50,3 +50,19 @@ def list_vehicles(
     user=Depends(current_user),
 ):
     return vehicle_service.list_all()
+
+
+@router.put("/{vehicle_id}", response_model=VehicleResponse)
+def update_vehicle(
+    vehicle_id: int,
+    payload: VehicleUpdateRequest,
+    vehicle_service: VehicleService = Depends(get_vehicle_service),
+    user=Depends(current_user),
+):
+    return vehicle_service.update(
+        vehicle_id,
+        make=payload.make,
+        model=payload.model,
+        category=payload.category,
+        price=payload.price,
+    )

@@ -1,3 +1,4 @@
+from app.domain.errors import VehicleNotFoundError
 from app.domain.vehicle import Vehicle
 
 
@@ -26,3 +27,11 @@ class VehicleService:
             price_min=price_min,
             price_max=price_max,
         )
+
+    def update(self, vehicle_id, make=None, model=None, category=None, price=None):
+        vehicle = self.vehicle_repository.get(vehicle_id)
+        if vehicle is None:
+            raise VehicleNotFoundError(vehicle_id)
+
+        vehicle.update_details(make=make, model=model, category=category, price=price)
+        return self.vehicle_repository.update(vehicle)

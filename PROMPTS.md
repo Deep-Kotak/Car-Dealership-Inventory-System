@@ -502,3 +502,43 @@ Produced: added `search()` to `VehicleRepository` (conditionally chains
 query params, `current_user`-gated), placed before the `GET /api/vehicles`
 list route — noted no `/{id}` route exists yet so there's nothing to actually
 conflict with today. Ran full suite (`pytest`) — all 28 tests pass.
+
+### 27.
+> The update tests are failing. Please implement the missing parts so the tests pass.
+>
+> Update the following:
+>
+> 1. In app/domain/errors.py
+>    - Add a VehicleNotFoundError exception.
+>
+> 2. In app/repositories/vehicle_repository.py
+>    - Add get and update methods.
+>
+> 3. In app/services/vehicle_service.py
+>    - Add an update method.
+>    - Load the vehicle by id.
+>    - Raise VehicleNotFoundError if it does not exist.
+>    - Call vehicle.update_details(...) with the new values.
+>    - Save the updated vehicle and return it.
+>
+> 4. In app/api/vehicle_routes.py
+>    - Add PUT /api/vehicles/{id}.
+>    - This endpoint should require authentication.
+>
+> 5. In app/main.py
+>    - Add an exception handler for VehicleNotFoundError.
+>    - Return 404 when this exception is raised.
+>    - Keep the exception handler with the other handlers instead of handling it inside the route.
+>
+> Keep the routes simple. They should only read the request, call the service, and return the response. The service should not update the vehicle fields directly. Always use vehicle.update_details() so the Vehicle entity handles the update rules.
+
+Produced: added `VehicleNotFoundError` to `app/domain/errors.py`; added
+`get(vehicle_id)`/`update(vehicle)` to `VehicleRepository`; added
+`update(vehicle_id, make, model, category, price)` to `VehicleService` — loads
+via repo, raises `VehicleNotFoundError` if missing, calls the existing
+`vehicle.update_details(...)` domain method, saves via repo (service never
+sets fields directly); added `VehicleUpdateRequest` schema (fields optional,
+matching `update_details`'s signature — no `quantity`); added
+`PUT /api/vehicles/{vehicle_id}` in `vehicle_routes.py`, `current_user`-gated;
+added centralized `VehicleNotFoundError`→404 handler in `app/main.py`. Ran
+full suite (`pytest`) — all 33 tests pass.

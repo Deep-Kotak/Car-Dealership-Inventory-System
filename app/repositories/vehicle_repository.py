@@ -23,6 +23,23 @@ class VehicleRepository:
         models = self.db.query(VehicleModel).all()
         return [self._to_domain(model) for model in models]
 
+    def get(self, vehicle_id):
+        model = self.db.query(VehicleModel).filter(VehicleModel.id == vehicle_id).first()
+        if model is None:
+            return None
+        return self._to_domain(model)
+
+    def update(self, vehicle):
+        model = self.db.query(VehicleModel).filter(VehicleModel.id == vehicle.id).first()
+        model.make = vehicle.make
+        model.model = vehicle.model
+        model.category = vehicle.category
+        model.price = vehicle.price
+        model.quantity = vehicle.quantity
+        self.db.commit()
+        self.db.refresh(model)
+        return self._to_domain(model)
+
     def search(self, make=None, model=None, category=None, price_min=None, price_max=None):
         query = self.db.query(VehicleModel)
 

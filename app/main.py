@@ -8,7 +8,7 @@ from app.api.auth_routes import router as auth_router
 from app.api.vehicle_routes import router as vehicle_router
 from app.config import settings
 from app.db import get_db
-from app.domain.errors import DuplicateEmailError, InvalidCredentialsError
+from app.domain.errors import DuplicateEmailError, InvalidCredentialsError, VehicleNotFoundError
 
 
 def create_app() -> FastAPI:
@@ -34,6 +34,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(InvalidCredentialsError)
     def handle_invalid_credentials(request: Request, exc: InvalidCredentialsError):
         return JSONResponse(status_code=401, content={"detail": "Invalid credentials"})
+
+    @app.exception_handler(VehicleNotFoundError)
+    def handle_vehicle_not_found(request: Request, exc: VehicleNotFoundError):
+        return JSONResponse(status_code=404, content={"detail": "Vehicle not found"})
 
     @app.get("/health")
     def health():

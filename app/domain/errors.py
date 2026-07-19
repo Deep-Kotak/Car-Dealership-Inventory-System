@@ -4,3 +4,7 @@ class DuplicateEmailError(Exception):
 
 class InvalidCredentialsError(Exception):
     pass
+
+
+class VehicleNotFoundError(Exception):
+    pass
