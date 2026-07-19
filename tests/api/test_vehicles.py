@@ -225,3 +225,28 @@ def test_search_with_no_matches_returns_empty_list(client):
 
     assert response.status_code == 200
     assert response_data == []
+def test_can_update_vehicle(client):
+    token = register_and_login(client)
+    created = add_vehicle(client, token, "Toyota", "Corolla", "sedan", 20000)
+    vehicle_id = created.json()["id"]
+
+    response = client.put(
+        f"/api/vehicles/{vehicle_id}",
+        json={"price": 18000},
+        headers=auth_header(token),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["price"] == 18000
+
+
+def test_update_missing_vehicle_returns_404(client):
+    token = register_and_login(client)
+
+    response = client.put(
+        "/api/vehicles/999",
+        json={"price": 18000},
+        headers=auth_header(token),
+    )
+
+    assert response.status_code == 404
