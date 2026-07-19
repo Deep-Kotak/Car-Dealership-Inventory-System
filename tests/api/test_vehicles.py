@@ -302,3 +302,56 @@ def test_delete_missing_vehicle_returns_404(client):
     )
 
     assert response.status_code == 404
+
+def test_purchase_reduces_stock(client):
+    token = register_and_login(client)
+
+    created = add_vehicle(
+        client,
+        token,
+        "Toyota",
+        "Corolla",
+        "sedan",
+        20000,
+        quantity=3,
+    )
+
+    vehicle_id = created.json()["id"]
+
+    response = client.post(
+        f"/api/vehicles/{vehicle_id}/purchase",
+        headers=auth_header(token),
+    )
+
+    response_data = response.json()
+
+    assert response.status_code == 200
+    assert response_data["quantity"] == 2
+
+
+def test_purchase_out_of_stock_returns_409(client):
+    token = register_and_login(client)
+
+    created = add_vehicle(
+        client,
+        token,
+        "Toyota",
+        "Corolla",
+        "sedan",
+        20000,
+        quantity=1,
+    )
+
+    vehicle_id = created.json()["id"]
+
+    client.post(
+        f"/api/vehicles/{vehicle_id}/purchase",
+        headers=auth_header(token),
+    )
+
+    response = client.post(
+        f"/api/vehicles/{vehicle_id}/purchase",
+        headers=auth_header(token),
+    )
+
+    assert response.status_code == 409
