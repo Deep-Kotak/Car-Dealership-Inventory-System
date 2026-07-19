@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session
 from app.api.deps import CurrentUser, current_user
 from app.db import get_db
 from app.repositories.vehicle_repository import VehicleRepository
-from app.schemas.vehicle import VehicleCreateRequest, VehicleResponse, VehicleUpdateRequest
+from app.schemas.vehicle import (
+    VehicleCreateRequest,
+    VehicleResponse,
+    VehicleRestockRequest,
+    VehicleUpdateRequest,
+)
 from app.services.vehicle_service import VehicleService
 
 router = APIRouter(prefix="/api/vehicles", tags=["vehicles"])
@@ -87,3 +92,16 @@ def purchase_vehicle(
     user=Depends(current_user),
 ):
     return vehicle_service.purchase(vehicle_id)
+
+
+@router.post("/{vehicle_id}/restock", response_model=VehicleResponse)
+def restock_vehicle(
+    vehicle_id: int,
+    payload: VehicleRestockRequest,
+    vehicle_service: VehicleService = Depends(get_vehicle_service),
+    user: CurrentUser = Depends(current_user),
+):
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    return vehicle_service.restock(vehicle_id, payload.amount)

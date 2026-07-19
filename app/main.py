@@ -11,6 +11,7 @@ from app.db import get_db
 from app.domain.errors import (
     DuplicateEmailError,
     InvalidCredentialsError,
+    InvalidRestockError,
     OutOfStockError,
     VehicleNotFoundError,
 )
@@ -47,6 +48,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(OutOfStockError)
     def handle_out_of_stock(request: Request, exc: OutOfStockError):
         return JSONResponse(status_code=409, content={"detail": "Vehicle is out of stock"})
+
+    @app.exception_handler(InvalidRestockError)
+    def handle_invalid_restock(request: Request, exc: InvalidRestockError):
+        return JSONResponse(status_code=400, content={"detail": str(exc)})
 
     @app.get("/health")
     def health():

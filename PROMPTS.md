@@ -614,3 +614,34 @@ service); added `POST /api/vehicles/{vehicle_id}/purchase` in
 `vehicle_routes.py`, `current_user`-gated, thin passthrough; added centralized
 `OutOfStockError`→409 handler in `app/main.py`. Ran full suite (`pytest`) —
 all 41 tests pass.
+
+### 30.
+> The restock tests are failing. Please implement the missing parts so the tests pass.
+>
+> Update the following:
+>
+> 1. In app/services/vehicle_service.py
+>    - Add a restock method.
+>    - Load the vehicle by id.
+>    - Call vehicle.restock(amount).
+>    - Save the updated vehicle and return it.
+>
+> 2. In app/api/vehicle_routes.py
+>    - Add POST /api/vehicles/{id}/restock.
+>    - This endpoint should only be accessible by admins.
+>    - Return 403 if the user is not an admin.
+>    - Accept the restock amount in the request body.
+>
+> 3. In app/main.py
+>    - Add an exception handler for InvalidRestockError.
+>    - Return 400 when this exception is raised.
+>
+> Keep the routes simple. They should only read the request, call the service, and return the response. Do not validate the restock amount in the route or the service. Always use vehicle.restock(amount) so the Vehicle entity handles the validation.
+
+Produced: added `restock(vehicle_id, amount)` to `VehicleService` (loads via
+repo, calls the existing `vehicle.restock(amount)` domain method, saves via
+repo — no amount validation in service); added `VehicleRestockRequest` schema
+(`amount: int`); added `POST /api/vehicles/{vehicle_id}/restock` with inline
+`is_admin` check (403 if not admin), thin passthrough; added centralized
+`InvalidRestockError`→400 handler in `app/main.py`. Ran full suite (`pytest`)
+— all 46 tests pass.

@@ -16,6 +16,10 @@ class VehicleUpdateRequest(BaseModel):
     price: float | None = None
 
 
+class VehicleRestockRequest(BaseModel):
+    amount: int
+
+
 class VehicleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

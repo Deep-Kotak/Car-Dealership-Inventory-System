@@ -50,3 +50,11 @@ class VehicleService:
 
         vehicle.purchase()
         return self.vehicle_repository.update(vehicle)
+
+    def restock(self, vehicle_id, amount):
+        vehicle = self.vehicle_repository.get(vehicle_id)
+        if vehicle is None:
+            raise VehicleNotFoundError(vehicle_id)
+
+        vehicle.restock(amount)
+        return self.vehicle_repository.update(vehicle)
