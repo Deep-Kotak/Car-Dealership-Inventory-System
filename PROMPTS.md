@@ -357,3 +357,57 @@ on unknown email or bad password via `verify_password`, else returns
 `create_token(user_id=user.id, role=user.role)`). Noted the earlier `service`
 typo in the test file (entry 22) has since been fixed on the human's side. Ran
 `pytest tests/service/test_auth_service.py` — all 5 tests pass.
+
+### 24.
+> The tests in tests/api/test_auth.py are failing. Please implement the missing parts so the tests pass.
+>
+> Create the following files:
+>
+> 1. app/repositories/models.py
+>    - Add a SQLAlchemy User model with:
+>      - id
+>      - email (unique)
+>      - password_hash
+>      - role
+>
+> 2. app/repositories/user_repository.py
+>    - Create a UserRepository class.
+>    - Add get_by_email and add methods.
+>    - Convert between the SQLAlchemy model and the User domain object so the service only works with the domain object.
+>
+> 3. app/schemas/auth.py
+>    - Add Pydantic schemas for register and login requests.
+>    - Add response schemas for the API.
+>
+> 4. app/api/auth_routes.py
+>    - Add POST /api/auth/register and return 201 on success.
+>    - Add POST /api/auth/login and return 200 with an access_token.
+>
+> 5. Update app/main.py
+>    - Register the auth router.
+>    - Add exception handlers for:
+>      - DuplicateEmailError → 409
+>      - InvalidCredentialsError → 401
+>    - Keep the exception mapping in one place instead of handling it inside the routes.
+>
+> 6. Create an Alembic migration for the user table.
+>
+> Keep the routes simple. They should only receive the request, call AuthService, and return the response. Do not put password validation or business logic inside the routes.
+>
+> Also update conftest.py so the test database creates the required tables before running the tests.
+
+Produced: added `Base = declarative_base()` to `app/db.py`; created
+`app/repositories/models.py` (`UserModel`); `app/repositories/user_repository.py`
+(`UserRepository.get_by_email`/`add`, converts to/from domain `User`);
+`app/schemas/auth.py` (`RegisterRequest`/`LoginRequest`/`UserResponse`/
+`TokenResponse` — used plain `str` for email instead of `EmailStr` to avoid an
+undeclared `email-validator` dependency, flagged this choice); `app/api/auth_routes.py`
+(thin register/login routes calling `AuthService`); updated `app/main.py`
+(registered auth router, added two centralized `@app.exception_handler`
+mappings for `DuplicateEmailError`→409 and `InvalidCredentialsError`→401);
+hand-wrote `alembic/versions/4526f51e978b_create_users_table.py` (didn't run
+`alembic revision --autogenerate` — would have needed live DB/env wiring, and
+hand-writing avoided SQLite-specific autogenerate output); updated
+`tests/conftest.py` to import `Base`/`models` and call
+`Base.metadata.create_all(bind=engine)` before yielding the client. Ran full
+suite (`pytest`) — all 18 tests pass.

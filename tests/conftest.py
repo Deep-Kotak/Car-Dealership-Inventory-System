@@ -8,13 +8,15 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.db import get_db
+from app.db import Base, get_db
 from app.main import create_app
+from app.repositories import models  # noqa: F401 - registers tables on Base.metadata
 
 
 @pytest.fixture
 def client(tmp_path):
     engine = create_engine(f"sqlite:///{tmp_path / 'test.db'}")
+    Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     def override_get_db():

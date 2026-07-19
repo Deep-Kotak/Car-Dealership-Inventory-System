@@ -1,11 +1,13 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.api.auth_routes import router as auth_router
 from app.config import settings
 from app.db import get_db
+from app.domain.errors import DuplicateEmailError, InvalidCredentialsError
 
 
 def create_app() -> FastAPI:
@@ -20,6 +22,16 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.include_router(auth_router)
+
+    @app.exception_handler(DuplicateEmailError)
+    def handle_duplicate_email(request: Request, exc: DuplicateEmailError):
+        return JSONResponse(status_code=409, content={"detail": "Email already registered"})
+
+    @app.exception_handler(InvalidCredentialsError)
+    def handle_invalid_credentials(request: Request, exc: InvalidCredentialsError):
+        return JSONResponse(status_code=401, content={"detail": "Invalid credentials"})
 
     @app.get("/health")
     def health():
