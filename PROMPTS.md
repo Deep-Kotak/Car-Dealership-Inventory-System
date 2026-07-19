@@ -336,3 +336,24 @@ user repository, `register()` checks `get_by_email`, raises
 `auth_service` was assigned, never `service`), unrelated to the service code.
 Flagged this rather than editing the test. Marked ⚠️ since it surfaces a defect
 in human-owned test code, not a correction of AI output.
+
+### 23.
+> The login tests in tests/service/test_auth_service.py are failing, so please implement the missing login functionality.
+>
+> Update app/domain/errors.py and add a new InvalidCredentialsError exception.
+>
+> In app/services/auth_service.py, add a login method to AuthService that:
+> - gets the user using the email
+> - raises InvalidCredentialsError if the user is not found
+> - verifies the password using verify_password from app.security
+> - raises InvalidCredentialsError if the password does not match
+> - creates and returns an authentication token using create_token with the user's id and role
+>
+> Keep the implementation simple and only add what is needed for the tests to pass.
+
+Produced: added `InvalidCredentialsError(Exception)` to `app/domain/errors.py`;
+added `login(email, password)` to `AuthService` (raises `InvalidCredentialsError`
+on unknown email or bad password via `verify_password`, else returns
+`create_token(user_id=user.id, role=user.role)`). Noted the earlier `service`
+typo in the test file (entry 22) has since been fixed on the human's side. Ran
+`pytest tests/service/test_auth_service.py` — all 5 tests pass.
