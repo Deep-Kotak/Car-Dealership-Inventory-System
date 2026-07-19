@@ -1,22 +1,30 @@
 from datetime import datetime, timedelta, timezone
 
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from app.config import settings
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    hashed_password = bcrypt.hashpw(
+        password.encode(),
+        bcrypt.gensalt(),
+    )
+
+    return hashed_password.decode()
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    return pwd_context.verify(password, hashed)
+    return bcrypt.checkpw(
+        password.encode(),
+        hashed.encode(),
+    )
 
 
 def create_token(user_id: int, role: str) -> str:

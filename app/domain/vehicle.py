@@ -1,4 +1,7 @@
-from app.domain.errors import OutOfStockError
+from app.domain.errors import (
+    InvalidRestockError,
+    OutOfStockError,
+)
 
 
 class Vehicle:
@@ -43,3 +46,7 @@ class Vehicle:
             raise OutOfStockError(self.id)
 
         self.quantity -= 1
+    def restock(self, amount):
+        if amount <= 0:
+            raise InvalidRestockError("restock amount must be positive")
+        self.quantity += amount
