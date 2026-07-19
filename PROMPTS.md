@@ -645,3 +645,17 @@ repo — no amount validation in service); added `VehicleRestockRequest` schema
 `is_admin` check (403 if not admin), thin passthrough; added centralized
 `InvalidRestockError`→400 handler in `app/main.py`. Ran full suite (`pytest`)
 — all 46 tests pass.
+
+### 31.
+> The admin check is currently written inside both the delete and restock routes. Please move it to a separate require_admin dependency in app/api/deps.py.
+>
+> Update the delete and restock routes to use this new dependency instead of checking current_user.is_admin inside the route.
+>
+> Do not change the existing tests. Make sure all tests continue to pass without any modifications.
+
+Produced: added `require_admin` dependency to `app/api/deps.py` (wraps
+`current_user`, raises 403 if not admin, else returns the user); updated
+`delete_vehicle` and `restock_vehicle` in `vehicle_routes.py` to depend on
+`require_admin` instead of inlining the check; removed the now-unused
+`HTTPException` import from `vehicle_routes.py`. No test files touched. Ran
+full suite (`pytest`) — all 46 tests pass, unchanged.

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentUser, current_user
+from app.api.deps import CurrentUser, current_user, require_admin
 from app.db import get_db
 from app.repositories.vehicle_repository import VehicleRepository
 from app.schemas.vehicle import (
@@ -77,11 +77,8 @@ def update_vehicle(
 def delete_vehicle(
     vehicle_id: int,
     vehicle_service: VehicleService = Depends(get_vehicle_service),
-    user: CurrentUser = Depends(current_user),
+    user: CurrentUser = Depends(require_admin),
 ):
-    if not user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-
     vehicle_service.delete(vehicle_id)
 
 
@@ -99,9 +96,6 @@ def restock_vehicle(
     vehicle_id: int,
     payload: VehicleRestockRequest,
     vehicle_service: VehicleService = Depends(get_vehicle_service),
-    user: CurrentUser = Depends(current_user),
+    user: CurrentUser = Depends(require_admin),
 ):
-    if not user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-
     return vehicle_service.restock(vehicle_id, payload.amount)

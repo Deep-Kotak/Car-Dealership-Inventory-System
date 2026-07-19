@@ -29,3 +29,10 @@ def current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     return CurrentUser(user_id=payload["user_id"], role=payload["role"])
+
+
+def require_admin(user: CurrentUser = Depends(current_user)) -> CurrentUser:
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    return user
