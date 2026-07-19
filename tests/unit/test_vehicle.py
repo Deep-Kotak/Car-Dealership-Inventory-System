@@ -2,6 +2,7 @@ import pytest
 
 from app.domain.errors import OutOfStockError
 from app.domain.vehicle import Vehicle
+from app.domain.errors import InvalidRestockError
 
 
 def test_vehicle_stores_basic_details():
@@ -113,3 +114,32 @@ def test_cannot_purchase_when_out_of_stock():
 
     with pytest.raises(OutOfStockError):
         vehicle.purchase()
+
+from app.domain.errors import InvalidRestockError
+
+
+def test_restock_increases_stock():
+    vehicle = Vehicle(
+        make="Toyota",
+        model="Corolla",
+        category="sedan",
+        price=20000,
+        quantity=2,
+    )
+
+    vehicle.restock(5)
+
+    assert vehicle.quantity == 7
+
+
+def test_restock_amount_must_be_positive():
+    vehicle = Vehicle(
+        make="Toyota",
+        model="Corolla",
+        category="sedan",
+        price=20000,
+        quantity=2,
+    )
+
+    with pytest.raises(InvalidRestockError):
+        vehicle.restock(0)
