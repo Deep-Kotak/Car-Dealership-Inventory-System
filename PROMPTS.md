@@ -411,3 +411,59 @@ hand-writing avoided SQLite-specific autogenerate output); updated
 `tests/conftest.py` to import `Base`/`models` and call
 `Base.metadata.create_all(bind=engine)` before yielding the client. Ran full
 suite (`pytest`) — all 18 tests pass.
+
+### 25.
+> The tests in tests/api/test_vehicles.py are failing. Please implement the missing parts so the tests pass.
+>
+> Create the following:
+>
+> 1. Update app/repositories/models.py
+>    - Add a Vehicle SQLAlchemy model with:
+>      - id
+>      - make
+>      - model
+>      - category
+>      - price
+>      - quantity
+>
+> 2. Create app/repositories/vehicle_repository.py
+>    - Add a VehicleRepository class.
+>    - Implement add and list_all methods.
+>    - Convert between the SQLAlchemy model and the Vehicle domain object so the service only works with the domain object.
+>
+> 3. Create app/services/vehicle_service.py
+>    - Add a VehicleService class.
+>    - It should take the repository in the constructor.
+>    - Implement create and list_all methods.
+>
+> 4. Create app/api/deps.py
+>    - Add a current_user dependency.
+>    - Read the Bearer token, decode it, and return the current user.
+>    - Return 401 if the token is missing or invalid.
+>
+> 5. Create app/schemas/vehicle.py
+>    - Add Pydantic schemas for vehicle requests and responses.
+>
+> 6. Create app/api/vehicle_routes.py
+>    - Add POST /api/vehicles and return 201.
+>    - Add GET /api/vehicles and return 200.
+>    - Both endpoints should use current_user.
+>
+> 7. Update app/main.py
+>    - Register the vehicle router.
+>    - Add an Alembic migration for the Vehicle table.
+>
+> Keep the routes simple. They should only handle the request, call the service, and return the response. Do not add business logic inside the routes.
+
+Produced: added `VehicleModel` to `app/repositories/models.py`; created
+`app/repositories/vehicle_repository.py` (`add`/`list_all`, converts to/from
+domain `Vehicle`); `app/services/vehicle_service.py` (`create`/`list_all`);
+`app/api/deps.py` (`current_user` via `HTTPBearer(auto_error=False)`, 401 on
+missing or invalid token — returns the decoded token payload rather than
+fetching a full `User` from the DB, flagged as a minimal-scope call since
+nothing downstream needs more yet); `app/schemas/vehicle.py`
+(`VehicleCreateRequest`/`VehicleResponse`); `app/api/vehicle_routes.py` (thin
+POST/GET `/api/vehicles`, both gated by `current_user`); registered the
+vehicle router in `app/main.py`; hand-wrote
+`alembic/versions/76f5130f481f_create_vehicles_table.py` chained after the
+users migration. Ran full suite (`pytest`) — all 24 tests pass.

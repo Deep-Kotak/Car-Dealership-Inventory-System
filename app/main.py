@@ -5,6 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.auth_routes import router as auth_router
+from app.api.vehicle_routes import router as vehicle_router
 from app.config import settings
 from app.db import get_db
 from app.domain.errors import DuplicateEmailError, InvalidCredentialsError
@@ -24,6 +25,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(auth_router)
+    app.include_router(vehicle_router)
 
     @app.exception_handler(DuplicateEmailError)
     def handle_duplicate_email(request: Request, exc: DuplicateEmailError):
