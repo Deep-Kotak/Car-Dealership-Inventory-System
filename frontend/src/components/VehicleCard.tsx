@@ -2,7 +2,7 @@ import type { Vehicle } from '../api/client'
 
 interface VehicleCardProps {
   vehicle: Vehicle
-  onPurchase: (vehicleId: number) => void
+  onPurchase?: (vehicleId: number) => void
   isAdmin?: boolean
   onEdit?: (vehicle: Vehicle) => void
   onDelete?: (vehicleId: number) => void
@@ -43,14 +43,16 @@ export function VehicleCard({
         </span>
       </div>
 
-      <button
-        type="button"
-        disabled={outOfStock}
-        onClick={() => onPurchase(vehicle.id)}
-        className="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Purchase
-      </button>
+      {onPurchase && (
+        <button
+          type="button"
+          disabled={outOfStock}
+          onClick={() => onPurchase(vehicle.id)}
+          className="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Purchase
+        </button>
+      )}
 
       {isAdmin && (
         <div className="mt-3 flex gap-2">

@@ -1039,3 +1039,49 @@ their responsibility afterward.
 Produced: ran `DATABASE_URL="postgresql://..." python seed.py` against the
 Neon database (connection string taken from `.env.example`, not guessed).
 Confirmed via read-only query: 2 users and 30 vehicles now present on Neon.
+
+### 42.
+> take unow screenshort and readme file and preper it properly
+
+Interpreted as: take a screenshot of the running app, and prepare README.md
+properly. Flagged upfront that no screenshot/browser-automation tool is
+available in this environment (only `WebFetch`, which returns text/markdown,
+not images) — did not attempt a screenshot, told the human it's on them to
+capture one. Before writing setup instructions, flagged that `requirements.txt`
+(from entry 32) still didn't list `passlib` even though `app/security.py`
+imports it directly, which would make the setup instructions I was about to
+write fail on a fresh clone; asked whether to add it. Human said yes — added
+`passlib==1.7.4` to `requirements.txt`.
+
+Produced: rewrote `README.md` (previously corrupted/placeholder GitHub
+boilerplate text) covering: project overview, tech stack, architecture
+(layered domain/services/repositories/api, mirrored on the frontend),
+backend/frontend setup instructions, seed script usage with a disposable-
+credentials warning, a test report section built from actually re-running
+`pytest` (48 passed) and `vitest run` (2 passed) fresh, a screenshots
+placeholder section (explicitly marked as not yet filled in, with
+instructions for the human to add real screenshots), and the assignment's
+mandatory "My AI Usage" section (tools used, how, division of labor per
+`primary_rules.md`, and a reflection), pointing to `PROMPTS.md` for the full
+prompt-by-prompt log. Verified no real secrets (Neon credentials, `SECRET_KEY`)
+were echoed into the new README via `grep`.
+
+### 43.
+> add the Screenshots in my Screenshots folder
+
+(Two earlier attempts at this same request found the Screenshots folder
+empty; this time 8 PNG files were present.) Viewed each image to identify
+its content before using it. Found `README.md` itself had been re-saved as
+UTF-16 on disk somewhere along the way (same corruption pattern the very
+first placeholder README had) — content was intact, just wrongly encoded;
+fixed by rewriting as UTF-8. Added a Screenshots section embedding all 8
+images with captions (login, user dashboard, admin filtered search, and the
+Add/Edit/Restock/Delete admin modals). One screenshot was a Chrome DevTools
+capture rather than a clean shot — didn't use it as a showcase image, but it
+revealed a real live deployment URL (car-dealership-inventory-system-fawn.vercel.app),
+so added a "Live demo" section for it (satisfies the assignment's optional
+deployed-link ask) after confirming via WebFetch that the URL is live and
+reachable. Comparing that screenshot against another also surfaced what looks
+like a real case-sensitivity bug in search (`make=maruti` → 0 results vs.
+`Maruti Suzuki` → 4 results); added a "Known issue" note about it rather than
+fixing it silently, since it wasn't asked for.

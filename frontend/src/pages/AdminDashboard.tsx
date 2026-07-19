@@ -242,7 +242,6 @@ export default function AdminDashboard() {
               <VehicleCard
                 key={vehicle.id}
                 vehicle={vehicle}
-                onPurchase={() => {}}
                 isAdmin
                 onEdit={openEditForm}
                 onDelete={openDeleteDialog}
