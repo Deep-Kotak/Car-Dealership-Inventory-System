@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 class RegisterRequest(BaseModel):
     email: str
     password: str
+    role: str = "user"
 
 
 class LoginRequest(BaseModel):

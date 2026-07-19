@@ -542,3 +542,43 @@ matching `update_details`'s signature — no `quantity`); added
 `PUT /api/vehicles/{vehicle_id}` in `vehicle_routes.py`, `current_user`-gated;
 added centralized `VehicleNotFoundError`→404 handler in `app/main.py`. Ran
 full suite (`pytest`) — all 33 tests pass.
+
+### 28. ⚠️
+> The delete tests are failing. Please implement the missing parts so the tests pass.
+>
+> Update the following:
+>
+> 1. Update the register endpoint.
+>    - Allow an optional role field in the request.
+>    - If no role is provided, use "user" as the default.
+>
+> 2. In app/repositories/vehicle_repository.py
+>    - Add a delete method.
+>
+> 3. In app/services/vehicle_service.py
+>    - Add a delete method.
+>    - Raise VehicleNotFoundError if the vehicle is not found.
+>
+> 4. In app/api/vehicle_routes.py
+>    - Add DELETE /api/vehicles/{id}.
+>    - Return 204 when the vehicle is deleted.
+>    - Only admins should be allowed to delete vehicles.
+>    - For now, check current_user.is_admin directly inside the route.
+>    - Return 403 if the user is not an admin.
+>
+> Keep the routes simple. They should only handle the request, call the service, and return the response. For this task, keep the admin check inside the route. We can move it to a separate dependency later when it is needed by more endpoints.
+
+Produced: added optional `role: str = "user"` to `RegisterRequest`, threaded
+through `AuthService.register` and the register route; changed
+`app/api/deps.py`'s `current_user` to return a `CurrentUser` dataclass
+(`user_id`, `role`, `is_admin` property) instead of the raw token dict, since
+the route needed `.is_admin` and a dict has no such attribute; added
+`delete(vehicle_id)` to `VehicleRepository` and `VehicleService` (raises
+`VehicleNotFoundError` if missing); added `DELETE /api/vehicles/{vehicle_id}`
+with the admin check inline (`if not user.is_admin: raise HTTPException(403)`)
+per explicit instruction to keep it in the route for now, 204 on success. Ran
+full suite (`pytest`) — all 37 tests pass. Marked ⚠️/flagged (not a rejection,
+but a self-raised concern): the register endpoint now lets any caller
+self-assign `role: "admin"` with no gate — flagged as a real access-control gap
+worth addressing before this ships, even though it's exactly what was asked
+for this step.

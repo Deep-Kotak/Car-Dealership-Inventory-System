@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import CurrentUser, current_user
 from app.db import get_db
 from app.repositories.vehicle_repository import VehicleRepository
 from app.schemas.vehicle import VehicleCreateRequest, VehicleResponse, VehicleUpdateRequest
@@ -66,3 +66,15 @@ def update_vehicle(
         category=payload.category,
         price=payload.price,
     )
+
+
+@router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_vehicle(
+    vehicle_id: int,
+    vehicle_service: VehicleService = Depends(get_vehicle_service),
+    user: CurrentUser = Depends(current_user),
+):
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    vehicle_service.delete(vehicle_id)

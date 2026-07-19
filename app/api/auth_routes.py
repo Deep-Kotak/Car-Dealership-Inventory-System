@@ -15,7 +15,7 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest, auth_service: AuthService = Depends(get_auth_service)):
-    return auth_service.register(payload.email, payload.password)
+    return auth_service.register(payload.email, payload.password, payload.role)
 
 
 @router.post("/login", response_model=TokenResponse)

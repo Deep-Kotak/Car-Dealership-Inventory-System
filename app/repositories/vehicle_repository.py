@@ -29,6 +29,12 @@ class VehicleRepository:
             return None
         return self._to_domain(model)
 
+    def delete(self, vehicle_id):
+        model = self.db.query(VehicleModel).filter(VehicleModel.id == vehicle_id).first()
+        if model is not None:
+            self.db.delete(model)
+            self.db.commit()
+
     def update(self, vehicle):
         model = self.db.query(VehicleModel).filter(VehicleModel.id == vehicle.id).first()
         model.make = vehicle.make

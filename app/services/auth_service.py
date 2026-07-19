@@ -7,11 +7,11 @@ class AuthService:
     def __init__(self, user_repository):
         self.user_repository = user_repository
 
-    def register(self, email, password):
+    def register(self, email, password, role="user"):
         if self.user_repository.get_by_email(email) is not None:
             raise DuplicateEmailError(email)
 
-        user = User(email=email, password_hash=hash_password(password), role="user")
+        user = User(email=email, password_hash=hash_password(password), role=role)
         return self.user_repository.add(user)
 
     def login(self, email, password):

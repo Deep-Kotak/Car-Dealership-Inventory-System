@@ -35,3 +35,10 @@ class VehicleService:
 
         vehicle.update_details(make=make, model=model, category=category, price=price)
         return self.vehicle_repository.update(vehicle)
+
+    def delete(self, vehicle_id):
+        vehicle = self.vehicle_repository.get(vehicle_id)
+        if vehicle is None:
+            raise VehicleNotFoundError(vehicle_id)
+
+        self.vehicle_repository.delete(vehicle_id)
