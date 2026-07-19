@@ -78,3 +78,12 @@ def delete_vehicle(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     vehicle_service.delete(vehicle_id)
+
+
+@router.post("/{vehicle_id}/purchase", response_model=VehicleResponse)
+def purchase_vehicle(
+    vehicle_id: int,
+    vehicle_service: VehicleService = Depends(get_vehicle_service),
+    user=Depends(current_user),
+):
+    return vehicle_service.purchase(vehicle_id)

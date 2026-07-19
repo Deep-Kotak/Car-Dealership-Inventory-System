@@ -582,3 +582,35 @@ but a self-raised concern): the register endpoint now lets any caller
 self-assign `role: "admin"` with no gate — flagged as a real access-control gap
 worth addressing before this ships, even though it's exactly what was asked
 for this step.
+
+### 29.
+> The purchase tests are failing. Please implement the missing parts so the tests pass.
+>
+> Update the following:
+>
+> 1. In app/services/vehicle_service.py
+>    - Add a purchase method.
+>    - Load the vehicle by id.
+>    - Raise VehicleNotFoundError if the vehicle is not found.
+>    - Call vehicle.purchase().
+>    - Save the updated vehicle and return it.
+>
+> 2. In app/api/vehicle_routes.py
+>    - Add POST /api/vehicles/{id}/purchase.
+>    - Return 200 on success.
+>    - This endpoint should require authentication.
+>    - Any logged-in user can purchase a vehicle.
+>
+> 3. In app/main.py
+>    - Add an exception handler for OutOfStockError.
+>    - Return 409 when this exception is raised.
+>
+> Keep the routes simple. They should only read the request, call the service, and return the response. Do not check the vehicle quantity in the route or the service. Always use vehicle.purchase() so the Vehicle entity handles the stock validation.
+
+Produced: added `purchase(vehicle_id)` to `VehicleService` (loads via repo,
+raises `VehicleNotFoundError` if missing, calls the existing
+`vehicle.purchase()` domain method, saves via repo — no quantity checks in
+service); added `POST /api/vehicles/{vehicle_id}/purchase` in
+`vehicle_routes.py`, `current_user`-gated, thin passthrough; added centralized
+`OutOfStockError`→409 handler in `app/main.py`. Ran full suite (`pytest`) —
+all 41 tests pass.
