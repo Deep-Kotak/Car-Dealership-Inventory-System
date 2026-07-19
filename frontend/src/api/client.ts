@@ -9,11 +9,12 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   })
@@ -52,4 +53,41 @@ export function loginRequest(email: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
+}
+
+export interface Vehicle {
+  id: number
+  make: string
+  model: string
+  category: string
+  price: number
+  quantity: number
+}
+
+export function listVehicles(token: string) {
+  return request<Vehicle[]>('/api/vehicles', {}, token)
+}
+
+export interface VehicleSearchParams {
+  make?: string
+  model?: string
+  category?: string
+  price_min?: number
+  price_max?: number
+}
+
+export function searchVehicles(token: string, params: VehicleSearchParams) {
+  const query = new URLSearchParams()
+  if (params.make) query.set('make', params.make)
+  if (params.model) query.set('model', params.model)
+  if (params.category) query.set('category', params.category)
+  if (params.price_min !== undefined) query.set('price_min', String(params.price_min))
+  if (params.price_max !== undefined) query.set('price_max', String(params.price_max))
+
+  const queryString = query.toString()
+  return request<Vehicle[]>(
+    `/api/vehicles/search${queryString ? `?${queryString}` : ''}`,
+    {},
+    token,
+  )
 }
