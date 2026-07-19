@@ -355,3 +355,47 @@ def test_purchase_out_of_stock_returns_409(client):
     )
 
     assert response.status_code == 409
+    
+def test_admin_can_restock(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000, quantity=2)
+    vehicle_id = created.json()["id"]
+
+    response = client.post(
+        f"/api/vehicles/{vehicle_id}/restock",
+        json={"amount": 5},
+        headers=auth_header(admin_token),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["quantity"] == 7
+
+
+def test_normal_user_cannot_restock(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000, quantity=2)
+    vehicle_id = created.json()["id"]
+
+    user_token = register_and_login(client, email="buyer@example.com")
+
+    response = client.post(
+        f"/api/vehicles/{vehicle_id}/restock",
+        json={"amount": 5},
+        headers=auth_header(user_token),
+    )
+
+    assert response.status_code == 403
+
+
+def test_restock_with_zero_amount_returns_400(client):
+    admin_token = register_admin_and_login(client)
+    created = add_vehicle(client, admin_token, "Toyota", "Corolla", "sedan", 20000, quantity=2)
+    vehicle_id = created.json()["id"]
+
+    response = client.post(
+        f"/api/vehicles/{vehicle_id}/restock",
+        json={"amount": 0},
+        headers=auth_header(admin_token),
+    )
+
+    assert response.status_code == 400
