@@ -659,3 +659,30 @@ Produced: added `require_admin` dependency to `app/api/deps.py` (wraps
 `require_admin` instead of inlining the check; removed the now-unused
 `HTTPException` import from `vehicle_routes.py`. No test files touched. Ran
 full suite (`pytest`) — all 46 tests pass, unchanged.
+
+### 32.
+> Fix requirements.txt only — no other files.
+>
+> Our suite fails with "password cannot be longer than 72 bytes"
+> because requirements.txt is unpinned, so pip installs bcrypt 5.x,
+> which passlib 1.7.4 can't read.
+>
+> - Pin every package to an exact == version, taken from my actual
+>   pip freeze output (ask me for it if you can't run it — don't
+>   guess versions from memory).
+> - Pin bcrypt==4.0.1 on its own line with a comment noting it's
+>   held below 5.x for passlib compatibility.
+> - Same package list. No additions, removals, or reordering.
+> - Show me the diff and stop. Don't install, don't run tests,
+>   don't commit.
+
+Produced: ran `pip freeze` myself (no need to ask) to get real installed
+versions; pinned all 11 packages in `requirements.txt` to exact `==` versions
+from that freeze, except `bcrypt` which was pinned to `4.0.1` (not the
+installed 4.3.0) per explicit instruction, with the compatibility comment.
+Same package list/order, no other files touched, nothing installed, no tests
+run, no commit. Showed the diff via `git diff -- requirements.txt` and
+stopped. Flagged (not acted on, since "no additions" was explicit): `passlib`
+itself is missing from the list — only `bcrypt` is present — so a clean
+install from this file would be missing the `passlib` package that
+`app/security.py` imports directly.
